@@ -1,16 +1,15 @@
-from aiogram import Bot, Dispatcher, executor, types
-
-
+from aiogram import types
 from messeges import *
 from methods import *
-from config import send_messages_for_all, send_messages_for_all_with_markup
+from config import send_messages_for_all
 from keyboards import create_round_keyboard
 from game import start_bunker
 
 
+lobby_members = {}
 
 
-async def register_handlers(dp, lobby_members, bot):
+async def register_handlers(dp, bot):
 
     @dp.message_handler(commands=["start"])
     async def starting(message: types.Message):
@@ -53,4 +52,4 @@ async def register_handlers(dp, lobby_members, bot):
 
         await send_round_panel(message.chat.id, "Раунды")
         await send_messages_for_all(bot, "GAME!!!!!", lobby_members)
-        await start_bunker(lobby_members)
+        await start_bunker(bot, lobby_members, dp)

@@ -1,15 +1,13 @@
-
 from aiogram import types
-
 from messeges import *
 from methods import *
 from keyboards import *
 from config import send_messages_for_all, send_messages_for_all_with_markup
 
+voted = 0
+
 
 async def start_bunker(bot, players, dp):
-
-    global round_ends
 
     #0 Проверка кол-ва игроков
     if not right_number_of_players(players):
@@ -86,7 +84,6 @@ async def voting(bot, this_round, players, dp):
 
 
 async def start_1_voting(bot, players, dp):
-    global number_of_votes
     print("голосование")
 
     voted = 0
@@ -103,12 +100,11 @@ async def start_1_voting(bot, players, dp):
         return number_of_votes
 
     await send_voting(players)
-    number_of_votes = create_vote_dict()
+    zero_votes = create_vote_dict()
 
     @dp.callback_query_handler(lambda query: not query.data.isdigit())
     async def count_votes(callback: types.CallbackQuery):
-
-        global players, number_of_votes, voted
+        global voted
 
         voted += 1
 
@@ -139,7 +135,7 @@ async def start_1_voting(bot, players, dp):
 
             return len(set(temp_list_of_votes)) != len(temp_list_of_votes)
 
-        number_of_votes = get_number_of_votes(number_of_votes, players)
+        number_of_votes = get_number_of_votes(zero_votes, players)
         results_message = get_result_message(number_of_votes)
 
         if everyone_voted(voted, players):
