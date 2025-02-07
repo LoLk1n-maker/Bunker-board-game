@@ -15,7 +15,7 @@ lobby_members = {}
 
 number_of_votes = {}
 
-#voted = 0
+voted = 0
 
 
 async def send_messages_for_all(message, lobby):
