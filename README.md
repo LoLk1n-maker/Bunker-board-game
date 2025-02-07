@@ -11,10 +11,6 @@ Telegram bot with board game bunker
 
 
 
-
-![Screenshot 2025-02-02 200350](https://github.com/user-attachments/assets/a3df37a3-b02f-45aa-baed-e921a02d9a87)
-
-
 ## МНОГО ЛИШНЕГО!!!!
 
 На данный момент в проекте много лишнего
