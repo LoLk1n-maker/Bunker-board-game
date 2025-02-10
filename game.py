@@ -5,7 +5,7 @@ from keyboards import *
 from config import send_messages_for_all, send_messages_for_all_with_markup
 
 voted = 0
-
+zero_votes = {}
 
 async def start_bunker(bot, players, dp):
 
@@ -85,6 +85,7 @@ async def voting(bot, this_round, players, dp):
 
 async def start_1_voting(bot, players, dp):
     print("голосование")
+    global zero_votes
 
     voted = 0
 
@@ -104,7 +105,7 @@ async def start_1_voting(bot, players, dp):
 
     @dp.callback_query_handler(lambda query: not query.data.isdigit())
     async def count_votes(callback: types.CallbackQuery):
-        global voted
+        global voted, zero_votes
 
         voted += 1
 
@@ -134,11 +135,14 @@ async def start_1_voting(bot, players, dp):
                 temp_list_of_votes.append(number_of_votes[member])
 
             return len(set(temp_list_of_votes)) != len(temp_list_of_votes)
-
+        print(zero_votes)
         number_of_votes = get_number_of_votes(zero_votes, players)
+        #print(number_of_votes)
         results_message = get_result_message(number_of_votes)
 
         if everyone_voted(voted, players):
             await send_messages_for_all(bot, results_message, players)
             voted = 0
+            zero_votes = create_vote_dict()
+
 

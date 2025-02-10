@@ -1,4 +1,4 @@
-token = '7299901452:AAFgtTz48uCo3sEauYKTFo_qKyclCAuK78c'
+token = '_'
 
 
 async def send_messages_for_all(bot, message, lobby):

@@ -53,3 +53,22 @@ async def register_handlers(dp, bot):
         await send_round_panel(message.chat.id, "Раунды")
         await send_messages_for_all(bot, "GAME!!!!!", lobby_members)
         await start_bunker(bot, lobby_members, dp)
+
+    @dp.message_handler(commands=['cleanup'])
+    async def cleanup_handler(message: types.Message):
+        chat_id = message.chat.id
+
+        # Получаем последние сообщения в чате (достаточно 1, если уверены, что только одно)
+        messages = await bot.get_updates(offset=-1, limit=1)
+
+        if messages:
+            last_message = messages[0].message
+            print(messages)
+            print(last_message.message_id)
+            for id in range(10000):
+                try:
+                    await bot.delete_message(chat_id=chat_id, message_id=id)
+                except Exception as e:
+                    print(f"Ошибка при удалении сообщения: {e}")
+        else:
+            print("В чате нет сообщений.")
