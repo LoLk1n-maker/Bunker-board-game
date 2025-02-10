@@ -1,10 +1,6 @@
 from aiogram import types
-from messeges import *
 from methods import *
-from config import send_messages_for_all
-from keyboards import create_round_keyboard
 from game import start_bunker
-
 
 lobby_members = {}
 
@@ -72,3 +68,16 @@ async def register_handlers(dp, bot):
                     print(f"Ошибка при удалении сообщения: {e}")
         else:
             print("В чате нет сообщений.")
+
+
+
+
+def create_round_keyboard():
+    round_markup = types.InlineKeyboardMarkup()
+    button1 = types.InlineKeyboardButton("1", callback_data="1")
+    button2 = types.InlineKeyboardButton("2", callback_data="2")
+    button3 = types.InlineKeyboardButton("3", callback_data="3")
+    button4 = types.InlineKeyboardButton("4", callback_data="4")
+    button5 = types.InlineKeyboardButton("5", callback_data="5")
+    round_markup.add(button1, button2, button3, button4, button5)
+    return round_markup

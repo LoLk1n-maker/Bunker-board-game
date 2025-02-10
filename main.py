@@ -5,10 +5,12 @@ from messege_handlers import register_handlers
 bot = Bot(token)
 dp = Dispatcher(bot)
 
+
 async def on_startup(dp):
     await register_handlers(dp, bot)
 
 
 if __name__ == "__main__":
-    # Запускаем обработчики и начинаем опрос
+    # Запускаем обработчики
+    # Сама игра запускается в одном из обработчиков
     executor.start_polling(dp, on_startup=on_startup)
