@@ -6,13 +6,21 @@ def add_to_lobby_with_id(lobby, member_id, username):
     lobby[username] = member_id
 
 
-def get_str_of_members(members):
-    return "\n".join(members)
+def get_str_of_members(members, admin):
 
+    admin_str = admin + "👑\n"
+    del members[admin]
+    members_without_admin = members
+
+    return admin_str + "\n".join(members_without_admin)
+
+
+def player_is_admin(username, admin):
+    return username == admin
 
 def right_number_of_players(lobby_members):
     count_of_players = len(lobby_members)
-    return (count_of_players <= 16) #and count_of_players >= 4)
+    return (count_of_players <= 16) #and count_of_players >= 4) #Стоит здесь временно ибо как мне в соло тестить то
 
 
 def find_card_photo_path(card, member_random_cards):
@@ -34,8 +42,7 @@ def find_player_random_cards():
 
 
 def get_catastrophe_path():
-    path = "JPG/Катастрофа/" + random.choice(catastrophe)
-    return path
+    return "JPG/Катастрофа/" + random.choice(catastrophe)
 
 
 def get_count_of_voting(round, count_of_members):

@@ -32,18 +32,14 @@ bunkers = card_data['bunkers']
 def load_messages_from_database():
     filename = "messages.db"
     with sqlite3.connect(filename) as conn:
-
-        # conn = sqlite3.connect(filename)
         cursor = conn.cursor()
-
         cursor.execute("SELECT message_name, message_text FROM messages")
         messages = cursor.fetchall()
 
-        # conn.close()
-
     global_vars = {}
     for message_name, message_text in messages:
-        global_vars[message_name] = message_text
+        new_message_text = message_text.replace(r'\n', '\n')#т к из базы данных строка идет сырая
+        global_vars[message_name] = new_message_text
 
     return global_vars
 

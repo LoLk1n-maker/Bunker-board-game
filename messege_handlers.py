@@ -3,6 +3,7 @@ from methods import *
 from game import start_bunker
 
 lobby_members = {}
+admin = ""
 
 
 async def register_handlers(dp, bot):
@@ -13,17 +14,27 @@ async def register_handlers(dp, bot):
 
     @dp.message_handler(commands=["join_lobby"])
     async def joining_to_lobby(message: types.Message):
-        global lobby_members
-        add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
-        str_of_members = get_str_of_members(lobby_members)
+        global lobby_members, admin
 
-        await send_messages_for_all(bot, join_to_lobby_message1 + str(len(lobby_members)) + join_to_lobby_message2 + str_of_members, lobby_members)
+        if message.chat.username in lobby_members:
+            await bot.send_message(message.chat.id, "Ты уже в лобби🤡🤡🤡")
+        else:
+            add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
+            str_of_members = get_str_of_members(lobby_members.copy(), admin)
+
+            def get_joining_message():
+                return join_to_lobby_message1 + str(len(lobby_members)) + join_to_lobby_message2 + str_of_members
+
+            await send_messages_for_all(bot, get_joining_message(), lobby_members)
 
     @dp.message_handler(commands=["new_game"])
     async def creating_new_game(message: types.Message):
-        global lobby_members
+        global lobby_members, admin
         lobby_members = {}
-        await bot.send_message(message.chat.id, creating_game_message)
+        admin = message.chat.username
+        add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
+        str_of_members = get_str_of_members(lobby_members.copy(), admin)
+        await bot.send_message(message.chat.id, "Ты сейчас админ этого лобби\nВот лобби сейчас:" + str_of_members + creating_game_message)
 
     @dp.message_handler(commands=["rules"])
     async def giving_the_rules(message: types.Message):
@@ -37,18 +48,21 @@ async def register_handlers(dp, bot):
 
     @dp.message_handler(commands=["start_game"])
     async def starting_game(message: types.Message):
-        global lobby_members
+        global lobby_members, admin
 
         async def send_round_panel(id, message):
             round_markup = create_round_keyboard()
-
             await bot.send_message(id, message, reply_markup=round_markup)
             return
 
-
-        await send_round_panel(message.chat.id, "Раунды")
-        await send_messages_for_all(bot, "GAME!!!!!", lobby_members)
-        await start_bunker(bot, lobby_members, dp)
+        if message.chat.username in lobby_members and player_is_admin(message.chat.username,admin):
+            await send_round_panel(message.chat.id, "Раунды:\nНажимать в конце соответствующего раунда▶")
+            await send_messages_for_all(bot, "GAME!!!!!", lobby_members)
+            await start_bunker(bot, lobby_members, dp)
+        elif message.chat.username in lobby_members:
+            await bot.send_message(message.chat.id, f"Чтобы начать игру ты должен быть админом\n👑Админ сейчас - {admin}")
+        else:
+            await bot.send_message(message.chat.id, "Чтобы начать игру тебе необходимо зайти в лобби\n/join_lobby - если кто то из твоих друзей уже его создал\n/new_game - создаст лобби(обнулив предыдущее), и ты станешь админом")
 
     @dp.message_handler(commands=['cleanup'])
     async def cleanup_handler(message: types.Message):
