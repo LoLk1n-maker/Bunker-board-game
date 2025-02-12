@@ -57,6 +57,7 @@ creating_game_message = messages['creating_game_message']
 receiving_cards_message = messages['receiving_cards_message']
 catastrophe_message = messages['catastrophe_message']
 wrong_count_of_players_message = messages['wrong_count_of_players_message']
-
+already_in_lobby_message = "Ты уже в лобби🤡🤡🤡"
+#without_vote_message = f"В этом раунде ({this_round}) голосования не будет\nТак что еще можете надеяться"
 
 
