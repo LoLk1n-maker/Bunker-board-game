@@ -49,15 +49,49 @@ messages = load_messages_from_database()
 # формируем сообщения
 without_loosers_message = messages["without_loosers_message"]
 hello_message = messages['hello_message']
-join_to_lobby_message1 = messages['join_to_lobby_message1']
-join_to_lobby_message2 = messages['join_to_lobby_message2']
 zero_voting_message = messages['zero_voting_message']
 voting_message = messages['voting_message']
 creating_game_message = messages['creating_game_message']
 receiving_cards_message = messages['receiving_cards_message']
 catastrophe_message = messages['catastrophe_message']
 wrong_count_of_players_message = messages['wrong_count_of_players_message']
-already_in_lobby_message = "Ты уже в лобби🤡🤡🤡"
-#without_vote_message = f"В этом раунде ({this_round}) голосования не будет\nТак что еще можете надеяться"
 
+already_in_lobby_message = "Ты уже в лобби🤡🤡🤡"
+round_message = "Раунды:\n" \
+                "Нажимать в конце соответствующего раунда▶"
+without_lobby_message = "Лобби еще нет, его нужно создать.\n" \
+                        "Команду я дам: /new_game\n" \
+                        "Друзей. я. не. дам"
+
+def get_not_admin_message(admin):
+    return f"Чтобы начать игру ты должен быть админом\n👑" \
+           f"Админ сейчас - {admin}"
+
+def get_without_vote_message(this_round):
+    return f"В {this_round}м раунде голосования не будет\n" \
+           f"Надежда есть"
+
+def get_with_looser_message(kicked_player):
+    return f"{kicked_player} сочли недостойным бункера:3\n" \
+           f"Отправляйся восвояси"
+
+def get_results_message(number_of_votes):
+    results_list = ''
+    for member in number_of_votes:
+        results_list += member + " " + str(number_of_votes[member]) + " " + "голосов\n"
+    return results_list
+
+def get_str_of_members(members, admin):
+
+    admin_str = admin + "👑\n"
+    del members[admin]
+    members_without_admin = members
+
+    return admin_str + "\n".join(members_without_admin)
+
+def get_joining_message(lobby_members, admin):
+    str_of_members = get_str_of_members(lobby_members.copy(), admin)
+    return f"Приветствую тебя в Бункере!!!!\n" \
+           f"Лобби:" \
+           f"\n{str_of_members}"
 

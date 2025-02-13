@@ -1,78 +1,42 @@
 import random
-from cards_and_messages_DB import *
+from cards_and_messages import *
 from aiogram import types
 
+# Handlers Methods
 def add_to_lobby_with_id(lobby, member_id, username):
     lobby[username] = member_id
-
-
-def get_str_of_members(members, admin):
-
-    admin_str = admin + "👑\n"
-    del members[admin]
-    members_without_admin = members
-
-    return admin_str + "\n".join(members_without_admin)
-
 
 def player_in_lobby(username, lobby):
     return username in lobby
 
-
 def player_is_admin(username, admin):
     return username == admin
 
+async def send_round_panel(bot, id, message):
+    round_markup = create_round_keyboard()
+    await bot.send_message(id, message, reply_markup=round_markup)
 
-def right_number_of_players(lobby_members):
-    count_of_players = len(lobby_members)
-    return (count_of_players <= 16) #and count_of_players >= 4) #Стоит здесь временно ибо как мне в соло тестить то
+def create_round_keyboard():
+    round_markup = types.InlineKeyboardMarkup()
+    button1 = types.InlineKeyboardButton("1", callback_data="1")
+    button2 = types.InlineKeyboardButton("2", callback_data="2")
+    button3 = types.InlineKeyboardButton("3", callback_data="3")
+    button4 = types.InlineKeyboardButton("4", callback_data="4")
+    button5 = types.InlineKeyboardButton("5", callback_data="5")
+    round_markup.add(button1, button2, button3, button4, button5)
+    return round_markup
 
 
+# path Methods
 def find_card_photo_path(card, member_random_cards):
     file_name = "JPG/" + str(card) + "/" + member_random_cards[card]
     return open(file_name, "rb")
-
-
-def find_player_random_cards():
-    cards = {
-        "special": random.choice(special),
-        "baggage": random.choice(baggage),
-        "biology": random.choice(biology),
-        "health": random.choice(health),
-        "job": random.choice(job),
-        "fact": random.choice(facts),
-        "hobby": random.choice(hobby)
-    }
-    return cards
-
 
 def get_catastrophe_path():
     return "JPG/Катастрофа/" + random.choice(catastrophe)
 
 
-# def get_count_of_voting(round, count_of_members):
-#
-#     list_of_voting = get_list_of_voting(count_of_members)
-#     # пример для 4х игроков [0, 0, 0, 1, 1]
-#
-#     return list_of_voting[round-1]
-
-
-# def get_list_of_voting(count_of_members):
-#
-#     count_of_staying = count_of_members // 2
-#     count_of_banned = count_of_members - count_of_staying
-#
-#     list_of_voting = [0, 0, 0, 0, 0]
-#     for i in [4, 3, 2, 1, 4, 3, 2, 1, 4, 3, 2, 1, 4, 3, 2, 1]:
-#         if count_of_banned != 0:
-#             list_of_voting[i] += 1
-#
-#             count_of_banned -= 1
-#
-#     return list_of_voting
-
-
+# just chill method, don't touch him pls
 def get_key_of_max_in_dict(input_dict):
     max_value = max(input_dict.values())
     for key, value in input_dict.items():
@@ -80,11 +44,11 @@ def get_key_of_max_in_dict(input_dict):
             return key
 
 
+# sending methods
 async def send_messages_for_all(bot, message, lobby):
     for player in lobby:
         id_ = lobby[player]
         await bot.send_message(id_, message)
-
 
 async def send_messages_for_all_with_markup(bot, message, lobby, markup):
     for player in lobby:
@@ -92,7 +56,8 @@ async def send_messages_for_all_with_markup(bot, message, lobby, markup):
         await bot.send_message(id_, message, reply_markup=markup)
 
 
-class votingMethods:
+# MEGA SUPER DUPER CLASSES FOR GAME
+class VotingMethods:
     def __init__(self, bot, this_round, players, dp):
         self.bot = bot
         self.this_round = this_round
@@ -152,15 +117,14 @@ class votingMethods:
         return number_of_votes
 
     def get_result_message(self, number_of_votes):
-        results_list = ''
-        for member in number_of_votes:
-            results_list += member + " " + str(number_of_votes[member]) + " " + "голосов\n"
+
+        results_message = get_results_message(number_of_votes)
         kicked_player = get_key_of_max_in_dict(number_of_votes)
 
         if self.without_loosers(number_of_votes):
-            return f"вот р-ты:\n{results_list}\n\n" + without_loosers_message
+            return f"Результаты голосования:\n{results_message}\n\n" + without_loosers_message
         else:
-            return f"вот р-ты:\n{results_list}\n\n\n{kicked_player} сочли недостойным бункера :3\nОтправляйся восвояси"
+            return f"Результаты голосования:\n{results_message}\n\n\n" + get_with_looser_message(kicked_player)
 
     def everyone_voted(self, voted):
         return voted == len(self.players)
@@ -176,3 +140,34 @@ class votingMethods:
         kicked_player = get_key_of_max_in_dict(number_of_votes)
         del self.players[kicked_player]
         print(f"{kicked_player} был изгнан)")
+
+    def without_vote(self, count_of_votings):
+        return count_of_votings == 0
+
+
+class GameMethods:
+    def __init__(self, lobby):
+        self.lobby = lobby
+
+    def right_number_of_players(self):
+        count_of_players = len(self.lobby)
+        return count_of_players <= 16  # and count_of_players >= 4 #Стоит здесь временно ибо как мне в соло тестить то
+
+    def find_player_random_cards(self):
+        cards = {
+            "special": random.choice(special),
+            "baggage": random.choice(baggage),
+            "biology": random.choice(biology),
+            "health": random.choice(health),
+            "job": random.choice(job),
+            "fact": random.choice(facts),
+            "hobby": random.choice(hobby)
+        }
+        return cards
+
+    def create_cards_group(self, player_random_cards):
+        cards_photo_group = types.MediaGroup()
+        for card in player_random_cards:
+            card_path = find_card_photo_path(card, player_random_cards)
+            cards_photo_group.attach_photo(card_path)
+        return cards_photo_group
