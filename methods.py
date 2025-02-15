@@ -3,35 +3,40 @@ from cards_and_messages import *
 from aiogram import types
 
 # Handlers Methods
-def add_to_lobby_with_id(lobby, member_id, username):
-    lobby[username] = member_id
 
-def player_in_lobby(username, lobby):
-    return username in lobby
 
-def player_is_admin(username, admin):
-    return username == admin
+class HandlerMethods:
 
-async def send_round_panel(bot, id, message):
-    round_markup = create_round_keyboard()
-    await bot.send_message(id, message, reply_markup=round_markup)
+    @staticmethod
+    def add_to_lobby_with_id(lobby, member_id, username):
+        lobby[username] = member_id
 
-def create_round_keyboard():
-    round_markup = types.InlineKeyboardMarkup()
-    button1 = types.InlineKeyboardButton("1", callback_data="1")
-    button2 = types.InlineKeyboardButton("2", callback_data="2")
-    button3 = types.InlineKeyboardButton("3", callback_data="3")
-    button4 = types.InlineKeyboardButton("4", callback_data="4")
-    button5 = types.InlineKeyboardButton("5", callback_data="5")
-    round_markup.add(button1, button2, button3, button4, button5)
-    return round_markup
+    @staticmethod
+    def player_in_lobby(username, lobby):
+        return username in lobby
+
+    @staticmethod
+    def player_is_admin(username, admin):
+        return username == admin
+
+    @staticmethod
+    async def send_round_panel(bot, id, message):
+        round_markup = HandlerMethods.create_round_keyboard()
+        await bot.send_message(id, message, reply_markup=round_markup)
+
+    @staticmethod
+    def create_round_keyboard():
+        round_markup = types.InlineKeyboardMarkup()
+        button1 = types.InlineKeyboardButton("1", callback_data="1")
+        button2 = types.InlineKeyboardButton("2", callback_data="2")
+        button3 = types.InlineKeyboardButton("3", callback_data="3")
+        button4 = types.InlineKeyboardButton("4", callback_data="4")
+        button5 = types.InlineKeyboardButton("5", callback_data="5")
+        round_markup.add(button1, button2, button3, button4, button5)
+        return round_markup
 
 
 # path Methods
-def find_card_photo_path(card, member_random_cards):
-    file_name = "JPG/" + str(card) + "/" + member_random_cards[card]
-    return open(file_name, "rb")
-
 def get_catastrophe_path():
     return "JPG/Катастрофа/" + random.choice(catastrophe)
 
@@ -129,7 +134,8 @@ class VotingMethods:
     def everyone_voted(self, voted):
         return voted == len(self.players)
 
-    def without_loosers(self, number_of_votes):
+    @staticmethod
+    def without_loosers(number_of_votes):
         temp_list_of_votes = []
         for member in number_of_votes:
             temp_list_of_votes.append(number_of_votes[member])
@@ -141,7 +147,8 @@ class VotingMethods:
         del self.players[kicked_player]
         print(f"{kicked_player} был изгнан)")
 
-    def without_vote(self, count_of_votings):
+    @staticmethod
+    def without_vote(count_of_votings):
         return count_of_votings == 0
 
 
@@ -153,7 +160,8 @@ class GameMethods:
         count_of_players = len(self.lobby)
         return count_of_players <= 16  # and count_of_players >= 4 #Стоит здесь временно ибо как мне в соло тестить то
 
-    def find_player_random_cards(self):
+    @staticmethod
+    def find_player_random_cards():
         cards = {
             "special": random.choice(special),
             "baggage": random.choice(baggage),
@@ -165,9 +173,20 @@ class GameMethods:
         }
         return cards
 
-    def create_cards_group(self, player_random_cards):
+    @staticmethod
+    def create_cards_group(player_random_cards):
         cards_photo_group = types.MediaGroup()
         for card in player_random_cards:
-            card_path = find_card_photo_path(card, player_random_cards)
+            card_path = GameMethods.open_card_photo(card, player_random_cards)
             cards_photo_group.attach_photo(card_path)
         return cards_photo_group
+
+    @staticmethod
+    def game_ends(current_round):
+        return current_round == 5
+
+    @staticmethod
+    def open_card_photo(card, member_random_cards):
+        file_name = "JPG/" + str(card) + "/" + member_random_cards[card]
+        return open(file_name, "rb")
+

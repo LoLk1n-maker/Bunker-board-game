@@ -16,12 +16,12 @@ async def register_handlers(dp, bot):
         global lobby_members, admin
 
 
-        if player_in_lobby(message.chat.username, lobby_members):
+        if HandlerMethods.player_in_lobby(message.chat.username, lobby_members):
             await bot.send_message(message.chat.id, already_in_lobby_message)
         elif lobby_members == {}:
             await bot.send_message(message.chat.id, without_lobby_message())
         else:
-            add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
+            HandlerMethods.add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
 
             await send_messages_for_all(bot, get_joining_message(lobby_members, admin), lobby_members)
 
@@ -31,7 +31,7 @@ async def register_handlers(dp, bot):
 
         lobby_members = {}
         admin = message.chat.username
-        add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
+        HandlerMethods.add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
         str_of_members = get_str_of_members(lobby_members.copy(), admin)
 
         await bot.send_message(message.chat.id, "Ты сейчас админ этого лобби\nВот лобби сейчас:" + str_of_members + creating_game_message)
@@ -54,14 +54,16 @@ async def register_handlers(dp, bot):
     async def starting_game(message: types.Message):
         global lobby_members, admin
 
-        if player_in_lobby(message.chat.username, lobby_members) and player_is_admin(message.chat.username, admin):
-            await send_round_panel(bot, message.chat.id, round_message)
+        if HandlerMethods.player_in_lobby(message.chat.username, lobby_members) and HandlerMethods.player_is_admin(message.chat.username, admin):
+            await HandlerMethods.send_round_panel(bot, message.chat.id, round_message)
             await send_messages_for_all(bot, "GAME!!!!!", lobby_members)
             await start_bunker(bot, lobby_members, dp)
-        elif player_in_lobby(message.chat.username, lobby_members)and not(player_is_admin(message.chat.username,admin)):
+        elif HandlerMethods.player_in_lobby(message.chat.username, lobby_members)and not(HandlerMethods.player_is_admin(message.chat.username,admin)):
             await bot.send_message(message.chat.id, get_not_admin_message(admin))
         else:
             await bot.send_message(message.chat.id, without_lobby_message)
+
+
 
     @dp.message_handler(commands=['cleanup'])
     async def cleanup_handler(message: types.Message):
