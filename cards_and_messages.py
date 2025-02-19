@@ -60,6 +60,7 @@ wrong_count_of_players_message = messages['wrong_count_of_players_message']
 already_in_lobby_message = messages['already_in_lobby_message']
 round_message = messages['round_message']
 without_lobby_message = messages['without_lobby_message']
+first_round_message = f"Начало 1го раунда"
 
 
 def get_final_message(lobby_members):

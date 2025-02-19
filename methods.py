@@ -165,6 +165,16 @@ class VotingM:
         for player in self.kicked_players:
             await self.bot.send_message(player, message)
 
+    @staticmethod
+    def player_already_vote(username, already_vote):
+        already_vote.append(username)
+        return already_vote
+
+    @staticmethod
+    def player_didnt_vote(player, already_vote):
+
+        return player not in already_vote
+
 
 
 class GameM:
@@ -204,4 +214,19 @@ class GameM:
     def open_card_photo(card, member_random_cards):
         file_name = "JPG/" + str(card) + "/" + member_random_cards[card]
         return open(file_name, "rb")
+
+    @staticmethod
+    def get_list_of_cards_about_bunker():
+        bunker_cards = []
+        for i in range(5):
+            card = random.choice(bunkers)
+            file_name = "JPG/bunkers/" + str(card)
+            bunker_cards.append(file_name)
+        return bunker_cards
+
+
+
+
+
+
 
