@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def load_cards_from_db():
     conn = sqlite3.connect('cards.db')
     cursor = conn.cursor()
@@ -15,9 +16,10 @@ def load_cards_from_db():
     conn.close()
     return data
 
+
 card_data = load_cards_from_db()
 
-#формируем списки карт
+# формируем списки карт
 baggage = card_data['baggage']
 biology = card_data['biology']
 health = card_data['health']
@@ -38,7 +40,7 @@ def load_messages_from_database():
 
     global_vars = {}
     for message_name, message_text in messages:
-        new_message_text = message_text.replace(r'\n', '\n')#т к из базы данных строка идет сырая
+        new_message_text = message_text.replace(r'\n', '\n')  # т к из базы данных строка идет сырая
         global_vars[message_name] = new_message_text
 
     return global_vars
@@ -55,26 +57,33 @@ creating_game_message = messages['creating_game_message']
 receiving_cards_message = messages['receiving_cards_message']
 catastrophe_message = messages['catastrophe_message']
 wrong_count_of_players_message = messages['wrong_count_of_players_message']
+already_in_lobby_message = messages['already_in_lobby_message']
+round_message = messages['round_message']
+without_lobby_message = messages['without_lobby_message']
 
-already_in_lobby_message = "Ты уже в лобби🤡🤡🤡"
-round_message = "Раунды:\n" \
-                "Нажимать в конце соответствующего раунда▶"
-without_lobby_message = "Лобби еще нет, его нужно создать.\n" \
-                        "Команду я дам: /new_game\n" \
-                        "Друзей. я. не. дам"
-final_message = "Вот кто остается в бункере"
+
+def get_final_message(lobby_members):
+    winners = ""
+    for member in lobby_members:
+        winners += member + "\n"
+
+    return "Вот кто остается в бункере\n" + winners + "\nНе забудьте создать новое лобби, если хотите поиграть снова\n/new_game\nсейчас играть снова без перезапуска не получается - перезапустите прогу"
+
 
 def get_not_admin_message(admin):
     return f"Чтобы начать игру ты должен быть админом\n👑" \
            f"Админ сейчас - {admin}"
 
+
 def get_without_vote_message(this_round):
     return f"В {this_round}м раунде голосования не будет\n" \
            f"Надежда есть"
 
+
 def get_with_looser_message(kicked_player):
     return f"{kicked_player} сочли недостойным бункера:3\n" \
            f"Отправляйся восвояси"
+
 
 def get_results_message(number_of_votes):
     results_list = ''
@@ -82,17 +91,17 @@ def get_results_message(number_of_votes):
         results_list += member + " " + str(number_of_votes[member]) + " " + "голосов\n"
     return results_list
 
-def get_str_of_members(members, admin):
 
+def get_str_of_members(members, admin):
     admin_str = admin + "👑\n"
     del members[admin]
     members_without_admin = members
 
     return admin_str + "\n".join(members_without_admin)
 
+
 def get_joining_message(lobby_members, admin):
     str_of_members = get_str_of_members(lobby_members.copy(), admin)
     return f"Приветствую тебя в Бункере!!!!\n" \
            f"Лобби:" \
            f"\n{str_of_members}"
-

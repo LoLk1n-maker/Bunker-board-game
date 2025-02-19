@@ -5,7 +5,7 @@ from aiogram import types
 # Handlers Methods
 
 
-class HandlerMethods:
+class HandlerM:
 
     @staticmethod
     def add_to_lobby_with_id(lobby, member_id, username):
@@ -21,7 +21,7 @@ class HandlerMethods:
 
     @staticmethod
     async def send_round_panel(bot, id, message):
-        round_markup = HandlerMethods.create_round_keyboard()
+        round_markup = HandlerM.create_round_keyboard()
         await bot.send_message(id, message, reply_markup=round_markup)
 
     @staticmethod
@@ -32,8 +32,11 @@ class HandlerMethods:
         button3 = types.InlineKeyboardButton("3", callback_data="3")
         button4 = types.InlineKeyboardButton("4", callback_data="4")
         button5 = types.InlineKeyboardButton("5", callback_data="5")
+        end_button = types.InlineKeyboardButton("Конец игры!", callback_data="0")
         round_markup.add(button1, button2, button3, button4, button5)
+        round_markup.row(end_button)
         return round_markup
+
 
 
 # path Methods
@@ -50,25 +53,26 @@ def get_key_of_max_in_dict(input_dict):
 
 
 # sending methods
-async def send_messages_for_all(bot, message, lobby):
+async def send_messages_for_players(bot, message, lobby):
     for player in lobby:
         id_ = lobby[player]
         await bot.send_message(id_, message)
 
-async def send_messages_for_all_with_markup(bot, message, lobby, markup):
+async def send_messages_for_all_with_players(bot, message, lobby, markup):
     for player in lobby:
         id_ = lobby[player]
         await bot.send_message(id_, message, reply_markup=markup)
 
 
 # MEGA SUPER DUPER CLASSES FOR GAME
-class VotingMethods:
+class VotingM:
     def __init__(self, bot, this_round, players, dp):
         self.bot = bot
         self.this_round = this_round
         self.players = players
         self.dp = dp
         self.count_of_members = len(players)
+        self.kicked_players = []
 
     async def first_voting(self, zero_voting_message):
         for player in self.players:
@@ -106,7 +110,7 @@ class VotingMethods:
 
     async def send_voting(self):
         voting_markup = self.create_voting_keyboard()
-        await send_messages_for_all_with_markup(self.bot, "Голосование", self.players, voting_markup)
+        await send_messages_for_all_with_players(self.bot, "Голосование", self.players, voting_markup)
 
     def create_vote_dict(self):
         number_of_votes = {}
@@ -131,28 +135,39 @@ class VotingMethods:
         else:
             return f"Результаты голосования:\n{results_message}\n\n\n" + get_with_looser_message(kicked_player)
 
-    def everyone_voted(self, voted):
-        return voted == len(self.players)
+    def everyone_voted(self, players, voted):
+        return voted == len(players)
 
     @staticmethod
-    def without_loosers(number_of_votes):
-        temp_list_of_votes = []
-        for member in number_of_votes:
-            temp_list_of_votes.append(number_of_votes[member])
+    def without_loosers(votes):
+        if not votes:
+            return False
 
-        return len(set(temp_list_of_votes)) != len(temp_list_of_votes)
+        max_votes = max(votes.values())
+        count = 0
+        for vote in votes.values():
+            if vote == max_votes:
+                count += 1
+        return count >= 2
 
     def kick_looser(self, number_of_votes):
         kicked_player = get_key_of_max_in_dict(number_of_votes)
+        self.kicked_players.append(self.players[kicked_player])
         del self.players[kicked_player]
+
         print(f"{kicked_player} был изгнан)")
 
     @staticmethod
     def without_vote(count_of_votings):
         return count_of_votings == 0
 
+    async def send_to_kicked(self, message):
+        for player in self.kicked_players:
+            await self.bot.send_message(player, message)
 
-class GameMethods:
+
+
+class GameM:
     def __init__(self, lobby):
         self.lobby = lobby
 
@@ -177,13 +192,13 @@ class GameMethods:
     def create_cards_group(player_random_cards):
         cards_photo_group = types.MediaGroup()
         for card in player_random_cards:
-            card_path = GameMethods.open_card_photo(card, player_random_cards)
+            card_path = GameM.open_card_photo(card, player_random_cards)
             cards_photo_group.attach_photo(card_path)
         return cards_photo_group
 
     @staticmethod
     def game_ends(current_round):
-        return current_round == 5
+        return current_round == 0
 
     @staticmethod
     def open_card_photo(card, member_random_cards):

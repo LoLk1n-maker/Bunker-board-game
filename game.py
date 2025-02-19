@@ -6,11 +6,11 @@ zero_votes = {}
 
 
 async def start_bunker(bot, players, dp):
-    bunker = GameMethods(players)
+    bunker = GameM(players)
 
     # 0 Проверка кол-ва игроков
     if not bunker.right_number_of_players():
-        await send_messages_for_all(bot, wrong_count_of_players_message, players)
+        await send_messages_for_players(bot, wrong_count_of_players_message, players)
         return
 
     # 1 получение катастрофы
@@ -20,20 +20,26 @@ async def start_bunker(bot, players, dp):
     await send_cards(bot, players)
 
     # 3 деление игры на раунды(их всегда 5, но голосований разное количество)
+    await send_messages_for_players(bot, f"Начало 1го раунда", players
+                                    )
     @dp.callback_query_handler(lambda query: query.data.isdigit())
     async def change_round(callback: types.CallbackQuery):
 
         current_round = int(callback.data[0])
         print(f"------------------------{current_round}_раунд-------------------------------")
-
         # 4 голосования
         await start_voting(bot, current_round, players, dp)
 
-        if GameMethods.game_ends(current_round):
-            await send_messages_for_all(bot, final_message, players)
+        if GameM.game_ends(current_round):
+            await send_messages_for_players(bot, get_final_message(players), players)
+            return
+        elif current_round == 5:
+            # without next round message
+            return
         else:
-            await send_messages_for_all(bot, f"Начало {current_round + 1}го раунда", players)
+            await send_messages_for_players(bot, f"Начало {current_round + 1}го раунда", players)
             current_round += 1
+    return
 
 
 async def send_catastrophy(bot, players):
@@ -48,12 +54,12 @@ async def send_catastrophy(bot, players):
 async def send_cards(bot, players): # очистить
 
     for player in players:
-        player_cards = GameMethods.find_player_random_cards()
+        player_cards = GameM.find_player_random_cards()
 
         # выводим карты игроков, на случай если необходима проверка игрока(например есть подозрения в обмане)
         print(f"Карты игрока {player}:\n{player_cards}\n")
 
-        cards_photo_group = GameMethods.create_cards_group(player_cards)
+        cards_photo_group = GameM.create_cards_group(player_cards)
 
         id = players[player]
         await bot.send_message(id, receiving_cards_message)
@@ -62,15 +68,16 @@ async def send_cards(bot, players): # очистить
 
 async def start_voting(bot, this_round, players, dp):
 
-    voting = VotingMethods(bot, this_round, players, dp)
-
-    if this_round == 1:
+    voting = VotingM(bot, this_round, players, dp)
+    if this_round == 0:
+        return
+    elif this_round == 1:
         await voting.first_voting(zero_voting_message)
     else:
         count_of_votings = voting.get_count_of_voting()
 
-        if VotingMethods.without_vote(count_of_votings):
-            await send_messages_for_all(bot, get_without_vote_message(this_round), players)
+        if VotingM.without_vote(count_of_votings):
+            await send_messages_for_players(bot, get_without_vote_message(this_round), players)
         else:
             # Количество голосований в раунде иожет быть разным
             async def votings_n_times(n):
@@ -81,9 +88,7 @@ async def start_voting(bot, this_round, players, dp):
 
 
 async def start_1_voting(bot, players, dp, voting):
-
     global zero_votes
-    print("Аътем лох")
 
     voted = 0
 
@@ -95,22 +100,25 @@ async def start_1_voting(bot, players, dp, voting):
 
         global voted, zero_votes
 
+        print(f"{callback.from_user.username} проголосовал за {callback.data}")
+
         voted += 1
-
         number_of_votes = voting.get_number_of_votes(zero_votes, callback)
-        results_message = voting.get_result_message(number_of_votes)
+        if voting.everyone_voted(players, voted):
 
-        if voting.everyone_voted(voted):
-            if VotingMethods.without_loosers(number_of_votes):
-                await send_messages_for_all(bot, results_message, players)
+            results_message = voting.get_result_message(number_of_votes)
 
+            if VotingM.without_loosers(number_of_votes):
+                await send_messages_for_players(bot, results_message, players)
+                await voting.send_to_kicked(results_message)
                 # в разработке
-
-                return
             else:
-                await send_messages_for_all(bot, results_message, players)
+                await send_messages_for_players(bot, results_message, players)
+                await voting.send_to_kicked(results_message)
+
                 voting.kick_looser(number_of_votes)
 
-                voted = 0
-                zero_votes = voting.create_vote_dict()
+            voted = 0
+            zero_votes = voting.create_vote_dict()
+            return
 

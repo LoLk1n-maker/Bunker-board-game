@@ -15,15 +15,14 @@ async def register_handlers(dp, bot):
     async def joining_to_lobby(message: types.Message):
         global lobby_members, admin
 
-
-        if HandlerMethods.player_in_lobby(message.chat.username, lobby_members):
+        if HandlerM.player_in_lobby(message.chat.username, lobby_members):
             await bot.send_message(message.chat.id, already_in_lobby_message)
         elif lobby_members == {}:
-            await bot.send_message(message.chat.id, without_lobby_message())
+            await bot.send_message(message.chat.id, without_lobby_message)
         else:
-            HandlerMethods.add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
+            HandlerM.add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
 
-            await send_messages_for_all(bot, get_joining_message(lobby_members, admin), lobby_members)
+            await send_messages_for_players(bot, get_joining_message(lobby_members, admin), lobby_members)
 
     @dp.message_handler(commands=["new_game"])
     async def creating_new_game(message: types.Message):
@@ -31,7 +30,7 @@ async def register_handlers(dp, bot):
 
         lobby_members = {}
         admin = message.chat.username
-        HandlerMethods.add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
+        HandlerM.add_to_lobby_with_id(lobby_members, message.chat.id, message.chat.username)
         str_of_members = get_str_of_members(lobby_members.copy(), admin)
 
         await bot.send_message(message.chat.id, "Ты сейчас админ этого лобби\nВот лобби сейчас:" + str_of_members + creating_game_message)
@@ -54,16 +53,21 @@ async def register_handlers(dp, bot):
     async def starting_game(message: types.Message):
         global lobby_members, admin
 
-        if HandlerMethods.player_in_lobby(message.chat.username, lobby_members) and HandlerMethods.player_is_admin(message.chat.username, admin):
-            await HandlerMethods.send_round_panel(bot, message.chat.id, round_message)
-            await send_messages_for_all(bot, "GAME!!!!!", lobby_members)
-            await start_bunker(bot, lobby_members, dp)
-        elif HandlerMethods.player_in_lobby(message.chat.username, lobby_members)and not(HandlerMethods.player_is_admin(message.chat.username,admin)):
-            await bot.send_message(message.chat.id, get_not_admin_message(admin))
+        # Player_...
+        p_username = message.chat.username
+        p_id = message.chat.id
+
+        if HandlerM.player_in_lobby(p_username, lobby_members):
+            if HandlerM.player_is_admin(p_username, admin):
+                async def start():
+                    await HandlerM.send_round_panel(bot, p_id, round_message)
+                    await send_messages_for_players(bot, "STARTING GAME!!!!!", lobby_members)
+                    await start_bunker(bot, lobby_members, dp)
+                await start()
+            else:
+                await bot.send_message(p_id, get_not_admin_message(admin))
         else:
-            await bot.send_message(message.chat.id, without_lobby_message)
-
-
+            await bot.send_message(p_id, without_lobby_message)
 
     @dp.message_handler(commands=['cleanup'])
     async def cleanup_handler(message: types.Message):
@@ -74,9 +78,8 @@ async def register_handlers(dp, bot):
 
         if messages:
             last_message = messages[0].message
-            print(messages)
-            print(last_message.message_id)
-            for id in range(10):
+
+            for id in range(35):
                 try:
                     await bot.delete_message(chat_id=chat_id, message_id=last_message.message_id - id)
                 except Exception as e:
