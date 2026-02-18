@@ -17,7 +17,9 @@
 <img width="646" height="721" alt="image" src="https://github.com/user-attachments/assets/431cf344-a6a4-4867-9340-9ce120d9db5e" />
 
 
-Игра с лобби из 3х человек
+Игра с лобби из 3х человек:
+
+
 <img width="774" height="709" alt="image" src="https://github.com/user-attachments/assets/4c0c4469-c116-423c-bce9-8bc94b663798" />
 <img width="751" height="777" alt="image" src="https://github.com/user-attachments/assets/82a62f3f-c1a2-4d8a-909b-a780d3288a13" />
 <img width="698" height="850" alt="image" src="https://github.com/user-attachments/assets/84f5e240-22f1-4400-9ebe-2f4e566e1715" />
